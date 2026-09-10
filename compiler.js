@@ -4,7 +4,7 @@ const {ast} = require('./ast');
 
 let input = `a = 10
 b = 20
-sum = a + b
+sum = a * b
 say sum
 `
 
