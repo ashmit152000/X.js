@@ -1,82 +1,135 @@
+const { scanTokenType, TokenType } = require("./lexeme_caterogy");
+
+const KEYWORDS = new Set(["const", "say"]);
+
 const lexer = (input) => {
-    const tokens = [];
-    let cursor = 0;
+  const tokens = [];
+  let cursor = 0;
+  let line = 1;
 
-    while(cursor < input.length) {
-        let char = input[cursor];
-        if(/[^\S\n]/.test(char)) {
-            cursor++;
-            continue;
-        }
+  const push = (type, value) => {
+    tokens.push({ type, value, line, column: cursor });
+  };
 
-        if(/\n/.test(char)) {
-            tokens.push({
-                type: 'NEWLINE',
-                value: 'newline'
-            })
+  const isAtEnd = () => cursor >= input.length;
 
-            char = input[++cursor];
-            continue;
-        }
+  const peek = () => {
+    if (isAtEnd()) {
+      return "\0";
+    }
+    return input[cursor];
+  }
 
-        if(/[a-zA-Z]/.test(char)) {
-            let word = '';
-            while(cursor < input.length && /[a-zA-Z]/.test(char)) {
-                word += char;
-                char = input[++cursor];
-            }
-
-            if(word === 'const') {
-                tokens.push({
-                    type: 'KEYWORD', value: word
-                })
-            } else if(word !== 'say') {
-                tokens.push({type: 'VARIABLE', value: word})
-            } else {
-                tokens.push({type: 'KEYWORD', value: word})
-            }
-
-            continue;
-            
-        }
-
-
-        if(/[0-9]/.test(char)) {
-            let num = '';
-            while(cursor < input.length && /[0-9]/.test(char)) {
-                num += char;
-                char = input[++cursor];
-            }
-
-            tokens.push({
-                type: 'NUMBER', value: parseInt(num)
-            });
-
-            continue;
-        }
-
-
-        if(/[\+\-\*/=]/.test(char)) {
-            tokens.push({
-                type: 'OPERATOR', value: char
-            });
-            cursor++;
-            continue;
-        }
-        
+  const matchNext = (expected) => {
+    if (input[cursor + 1] === expected) {
+      cursor++;
+      return true;
     }
 
+    return false;
+  };
 
-    return tokens;
-}
+  while (cursor < input.length) {
+    const char = input[cursor];
+
+    if (/[\t\r ]/.test(char)) {
+      cursor++;
+      continue;
+    }
+
+    if (char === "\n") {
+      push(TokenType.newline, "\n");
+      line++;
+      cursor++;
+      continue;
+    }
+
+    if (/[a-zA-Z]/.test(char)) {
+      let word = "";
+      while (cursor < input.length && /[a-zA-Z]/.test(input[cursor])) {
+        word += input[cursor];
+        cursor++;
+      }
+
+      push(KEYWORDS.has(word) ? TokenType.keyword : TokenType.identifier, word);
+      continue;
+    }
+
+    if (/[0-9]/.test(char)) {
+      let num = "";
+      while (cursor < input.length && /[0-9]/.test(input[cursor])) {
+        num += input[cursor];
+        cursor++;
+      }
+
+      push(TokenType.number, parseInt(num, 10));
+      continue;
+    }
+
+    if (char === "/" && matchNext("/")) {
+      while (cursor < input.length && input[cursor] !== "\n") {
+        cursor++;
+      }
+      line++;
+      continue;
+    }
+
+    if (char === "=") {
+      const twoChar = matchNext("=");
+      push(scanTokenType(twoChar ? "==" : "=", line, cursor), twoChar ? "==" : "=");
+      cursor++;
+      continue;
+    }
+
+    if (char === "!") {
+      const twoChar = matchNext("=");
+      push(scanTokenType(twoChar ? "!=" : "!", line, cursor), twoChar ? "!=" : "!");
+      cursor++;
+      continue;
+    }
+
+    if (char === ">") {
+      const twoChar = matchNext("=");
+      push(scanTokenType(twoChar ? ">=" : ">", line, cursor), twoChar ? ">=" : ">");
+      cursor++;
+      continue;
+    }
+
+    if (char === "<") {
+      const twoChar = matchNext("=");
+      push(scanTokenType(twoChar ? "<=" : "<", line, cursor), twoChar ? "<=" : "<");
+      cursor++;
+      continue;
+    }
+
+    // For String literals
+    if(char === '"') {
+      let strVal = "";
+      cursor++; // Skip the opening quote
+      while(!isAtEnd() && peek() !== '"') {
+        strVal += peek();
+        cursor++;
+      }
+
+      if(isAtEnd()) {
+        throw new Error(`Unterminated string at line ${line}, column ${cursor}`);
+      }
+
+      cursor++; // Skip the closing quote
+      push(TokenType.string, strVal);
+      continue;
+    }
+
+    const type = scanTokenType(char, line, cursor);
+    if (typeof type === "string" && type.startsWith("Unexpected token")) {
+      throw new Error(type);
+    }
+
+    push(type, char);
+    cursor++;
+  }
+
+  return tokens;
+};
 
 module.exports = { lexer };
-
-
-
-
-
-
-
-
-
