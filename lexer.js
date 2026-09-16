@@ -11,6 +11,10 @@ const lexer = (input) => {
     tokens.push({ type, value, line, column: cursor });
   };
 
+  function isDigit(c) {
+    return c >= "0" && c <= "9";
+  }
+
   const isAtEnd = () => cursor >= input.length;
 
   const peek = () => {
@@ -18,7 +22,14 @@ const lexer = (input) => {
       return "\0";
     }
     return input[cursor];
-  }
+  };
+
+  const peekNext = () => {
+    if (cursor + 1 >= input.length) {
+      return "\0";
+    }
+    return input[cursor + 1];
+  };
 
   const matchNext = (expected) => {
     if (input[cursor + 1] === expected) {
@@ -55,14 +66,39 @@ const lexer = (input) => {
       continue;
     }
 
-    if (/[0-9]/.test(char)) {
+    // if (/[0-9]/.test(char)) {
+    //   let num = "";
+    //   while (cursor < input.length && /[0-9]/.test(input[cursor])) {
+    //     num += input[cursor];
+    //     cursor++;
+    //   }
+
+    //   push(TokenType.number, parseInt(num, 10));
+    //   continue;
+    // }
+    // Handle decimals
+    if (isDigit(char)) {
       let num = "";
-      while (cursor < input.length && /[0-9]/.test(input[cursor])) {
+      while (cursor < input.length && isDigit(input[cursor])) {
         num += input[cursor];
         cursor++;
       }
 
-      push(TokenType.number, parseInt(num, 10));
+      if (input[cursor] === ".") {
+        if (!isDigit(input[cursor + 1])) {
+          throw new Error("Unexpected end of float");
+        }
+
+        num += input[cursor];
+        cursor++;
+
+        while (cursor < input.length && isDigit(input[cursor])) {
+          num += input[cursor];
+          cursor++;
+        }
+      }
+
+      push(TokenType.number, parseFloat(num));
       continue;
     }
 
@@ -70,49 +106,62 @@ const lexer = (input) => {
       while (cursor < input.length && input[cursor] !== "\n") {
         cursor++;
       }
-      line++;
       continue;
     }
 
     if (char === "=") {
       const twoChar = matchNext("=");
-      push(scanTokenType(twoChar ? "==" : "=", line, cursor), twoChar ? "==" : "=");
+      push(
+        scanTokenType(twoChar ? "==" : "=", line, cursor),
+        twoChar ? "==" : "=",
+      );
       cursor++;
       continue;
     }
 
     if (char === "!") {
       const twoChar = matchNext("=");
-      push(scanTokenType(twoChar ? "!=" : "!", line, cursor), twoChar ? "!=" : "!");
+      push(
+        scanTokenType(twoChar ? "!=" : "!", line, cursor),
+        twoChar ? "!=" : "!",
+      );
       cursor++;
       continue;
     }
 
     if (char === ">") {
       const twoChar = matchNext("=");
-      push(scanTokenType(twoChar ? ">=" : ">", line, cursor), twoChar ? ">=" : ">");
+      push(
+        scanTokenType(twoChar ? ">=" : ">", line, cursor),
+        twoChar ? ">=" : ">",
+      );
       cursor++;
       continue;
     }
 
     if (char === "<") {
       const twoChar = matchNext("=");
-      push(scanTokenType(twoChar ? "<=" : "<", line, cursor), twoChar ? "<=" : "<");
+      push(
+        scanTokenType(twoChar ? "<=" : "<", line, cursor),
+        twoChar ? "<=" : "<",
+      );
       cursor++;
       continue;
     }
 
     // For String literals
-    if(char === '"') {
+    if (char === '"') {
       let strVal = "";
       cursor++; // Skip the opening quote
-      while(!isAtEnd() && peek() !== '"') {
+      while (!isAtEnd() && peek() !== '"') {
         strVal += peek();
         cursor++;
       }
 
-      if(isAtEnd()) {
-        throw new Error(`Unterminated string at line ${line}, column ${cursor}`);
+      if (isAtEnd()) {
+        throw new Error(
+          `Unterminated string at line ${line}, column ${cursor}`,
+        );
       }
 
       cursor++; // Skip the closing quote

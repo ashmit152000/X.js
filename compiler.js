@@ -1,12 +1,15 @@
 const { lexer } = require('./lexer');
 const { ast } = require('./ast');
 
-let input = `a = 10
-b = 20
+let input = `a = 10.25
+b = 20.5
+c = 34
+d = a + b + c
 say a
+say d
 name = "Ashmit"
 say name
-say a + b
+say a + b + c
 `;
 
 const tokens = lexer(input);
@@ -18,9 +21,7 @@ const astOutput = ast(tokens);
 
 console.log(`AST: `, astOutput);
 
-
-function compileValue(value) {
-
+function compileExpression(value) {
     if (value.type === 'NUMBER_LITERAL') {
         return value.value;
     }
@@ -32,6 +33,16 @@ function compileValue(value) {
     if (value.type === 'IDENTIFIER') {
         return value.value;
     }
+
+    if(value.type === 'BINARY_EXPRESSION') {
+        let left = compileExpression(value.left);
+        let operator = value.operator;
+        let right = compileExpression(value.right);
+        return `${left} ${operator} ${right}`;
+    }
+
+
+    throw new Error(`Unknown expression type: ${value.type}`);
 }
 
 
@@ -48,16 +59,16 @@ function compiler(input) {
             let content = body.shift();
 
             if (content.type === 'DECLARATION') {
-
+                console.log(`Content Value`, content.value);
                 finalVal +=
-                    `${content.name} = ${compileValue(content.value)}\n`;
+                    `${content.name} = ${compileExpression(content.value)}\n`;
 
             }
 
             else if (content.type === 'LOG' && content.name === 'say') {
-
+                console.log(`Content Value`, content.value);
                 finalVal +=
-                    `console.log(${compileValue(content.value)})\n`;
+                    `console.log(${compileExpression(content.value)})\n`;
             }
 
             
