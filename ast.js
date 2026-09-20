@@ -1,58 +1,5 @@
 const { TokenType } = require("./lexeme_caterogy");
-
-function parseValue(token) {
-  if (token.type === TokenType.string) {
-    return {
-      type: "STRING_LITERAL",
-      value: token.value,
-    };
-  }
-
-  if (token.type === TokenType.number) {
-    return {
-      type: "NUMBER_LITERAL",
-      value: token.value,
-    };
-  }
-
-  if (token.type === TokenType.identifier) {
-    return {
-      type: "IDENTIFIER",
-      value: token.value,
-    };
-  }
-
-  return null;
-}
-
-function isOperator(token) {
-  return (
-    token.type === TokenType.plus ||
-    token.type === TokenType.minus ||
-    token.type === TokenType.multiply ||
-    token.type === TokenType.divide
-  );
-}
-
-function parseExpression(input) {
-  let left = parseValue(input.shift());
-
-  if (input.length && input[0].type !== TokenType.newline) {
-    if (isOperator(input[0])) {
-      let operator = input.shift().value;
-      let right = parseExpression(input);
-
-      return {
-        type: "BINARY_EXPRESSION",
-        left,
-        operator,
-        right,
-      };
-    }
-  }
-
-  return left;
-}
+const { parseTerm } = require("./precedenceHandler");
 
 function ast(input) {
   const ast = {
@@ -74,14 +21,14 @@ function ast(input) {
       // =
       if (input.length && input[0].type === TokenType.equal) {
         input.shift();
-        declaration.value = parseExpression(input);
+        declaration.value = parseTerm(input);
         ast.body.push(declaration);
       }
     }
 
     // say
     else if (token.type === TokenType.say) {
-      let value = parseExpression(input);
+      let value = parseTerm(input);
 
       ast.body.push({
         type: "LOG",

@@ -1,15 +1,8 @@
 const { lexer } = require('./lexer');
 const { ast } = require('./ast');
 
-let input = `a = 10.25
-b = 20.5
-c = 34
-d = a + b + c
-say a
-say d
-name = "Ashmit"
-say name
-say a + b + c * 2
+let input = `
+say -10 * ( 5+ 2)
 `;
 
 const tokens = lexer(input);
@@ -19,7 +12,7 @@ console.log(`Tokens: `, tokens);
 
 const astOutput = ast(tokens);
 
-console.log(`AST: `, astOutput);
+console.dir(astOutput, { depth: Infinity });
 
 function compileExpression(value) {
     if (value.type === 'NUMBER_LITERAL') {
@@ -39,6 +32,12 @@ function compileExpression(value) {
         let operator = value.operator;
         let right = compileExpression(value.right);
         return `${left} ${operator} ${right}`;
+    }
+
+    if(value.type === 'UNARY_EXPRESSION') {
+        let operator = value.operator;
+        let operand = compileExpression(value.operand);
+        return `${operator}${operand}`;
     }
 
 
@@ -83,6 +82,6 @@ console.log(`Output: `);
 
 const output = compiler(astOutput);
 
-console.log(output);
+console.dir(output, { depth: Infinity });
 
 eval(output);
