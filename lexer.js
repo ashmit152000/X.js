@@ -1,6 +1,5 @@
 const { scanTokenType, TokenType } = require("./lexeme_caterogy");
-
-const KEYWORDS = new Set(["const", "say"]);
+const { KEYWORDS } = require("./keywords");
 
 const lexer = (input) => {
   const tokens = [];
@@ -40,6 +39,13 @@ const lexer = (input) => {
     return false;
   };
 
+  const identifyReservedWord = (word) => {
+    if (KEYWORDS.has(word)) {
+      return KEYWORDS.get(word);
+    }
+    return TokenType.identifier;
+  };
+
   while (cursor < input.length) {
     const char = input[cursor];
 
@@ -62,21 +68,12 @@ const lexer = (input) => {
         cursor++;
       }
 
-      push(KEYWORDS.has(word) ? TokenType.keyword : TokenType.identifier, word);
+      push(identifyReservedWord(word), word);
       continue;
     }
 
-    // if (/[0-9]/.test(char)) {
-    //   let num = "";
-    //   while (cursor < input.length && /[0-9]/.test(input[cursor])) {
-    //     num += input[cursor];
-    //     cursor++;
-    //   }
-
-    //   push(TokenType.number, parseInt(num, 10));
-    //   continue;
-    // }
-    // Handle decimals
+    
+    // Handle numbers (integers and floats)
     if (isDigit(char)) {
       let num = "";
       while (cursor < input.length && isDigit(input[cursor])) {

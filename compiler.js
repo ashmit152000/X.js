@@ -9,7 +9,7 @@ say a
 say d
 name = "Ashmit"
 say name
-say a + b + c
+say a + b + c * 2
 `;
 
 const tokens = lexer(input);

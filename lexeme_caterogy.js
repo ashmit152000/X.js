@@ -1,37 +1,47 @@
 const TokenType = Object.freeze({
+
   // Literals
   identifier: "identifier",
   number: "number",
   string: "string",
 
   // Keywords
-  keyword: "keyword",
+  and: "and",
+  class: "class",
+  const: "const",
+  else: "else",
+  false: "false",
+  for: "for",
+  fun: "fun",
+  if: "if",
+  nil: "nil",
+  or: "or",
+  return: "return",
+  say: "say",
+  super: "super",
+  this: "this",
+  true: "true",
+  while: "while",
 
   // Operators
   plus: "plus",
   minus: "minus",
   multiply: "multiply",
   divide: "divide",
-
   equal: "equal",
   equalEqual: "equalEqual",
-
   not: "not",
   notEqual: "notEqual",
-
   greater: "greater",
   greaterEqual: "greaterEqual",
-
   less: "less",
   lessEqual: "lessEqual",
 
   // Punctuation
   leftParen: "leftParen",
   rightParen: "rightParen",
-
   leftBrace: "leftBrace",
   rightBrace: "rightBrace",
-
   comma: "comma",
   dot: "dot",
 
@@ -40,20 +50,6 @@ const TokenType = Object.freeze({
 
   // End of file
   eof: "eof",
-
-  // Punctuation
-  leftParen: "leftParen",
-  rightParen: "rightParen",
-  leftBrace: "leftBrace",
-  rightBrace: "rightBrace",
-
-  comma: "comma",
-  dot: "dot",
-  semicolon: "semicolon",
-
-  // End of file
-  eof: "eof",
-  newline: "newline",
 });
 
 

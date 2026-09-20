@@ -34,7 +34,6 @@ function isOperator(token) {
   );
 }
 
-
 function parseExpression(input) {
   let left = parseValue(input.shift());
 
@@ -75,53 +74,20 @@ function ast(input) {
       // =
       if (input.length && input[0].type === TokenType.equal) {
         input.shift();
-
-        // // Get left/value
-        // let valueToken = input.shift();
-
-        // let left = parseValue(valueToken);
-
-        // // Check for binary operator
-        // if (
-        //   input.length &&
-        //   input[0].type !== TokenType.newline &&
-        //   isOperator(input[0])
-        // ) {
-        //   let operatorToken = input.shift();
-
-        //   // Get right value
-        //   let rightValueToken = input.shift();
-
-        //   let right = parseValue(rightValueToken);
-
-        //   declaration.value = {
-        //     type: "BINARY_EXPRESSION",
-        //     left: left,
-        //     operator: operatorToken.value,
-        //     right: right,
-        //   };
-        // } else {
-        //   declaration.value = left;
-        // }
-
-        // Parse the expression
         declaration.value = parseExpression(input);
-
         ast.body.push(declaration);
       }
     }
 
     // say
-    else if (token.type === TokenType.keyword) {
-      if (token.value === "say") {
-        let value = parseExpression(input);
+    else if (token.type === TokenType.say) {
+      let value = parseExpression(input);
 
-        ast.body.push({
-          type: "LOG",
-          name: "say",
-          value,
-        });
-      }
+      ast.body.push({
+        type: "LOG",
+        name: "say",
+        value,
+      });
     }
   }
 
